@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>游戏开服提醒</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6fed'/%3E%3Cpath d='M32 8c7 0 12 5 12 12v8l5 7v4H15v-4l5-7v-8c0-7 5-12 12-12z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='42' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --blue: #2f6fed;
+    --blue-deep: #1e55c8;
+    --blue-soft: #e8f1ff;
+    --ink: #1f2a3d;
+    --ink-dim: #7b8aa0;
+    --card-bg: #ffffff;
+    --card-line: #e5edf8;
+    --shadow: 0 8px 30px rgba(47, 111, 237, 0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(900px 600px at 80% -10%, rgba(47, 111, 237, 0.10), transparent 55%),
+      radial-gradient(800px 500px at 0% 100%, rgba(56, 189, 248, 0.08), transparent 55%),
+      linear-gradient(180deg, #eef4fc 0%, #f8fbff 55%, #ffffff 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 56px;
+  }
+  .wrap { width: 100%; max-width: 460px; }
+
+  /* 顶部标题 */
+  header { text-align: center; margin-bottom: 26px; }
+  .badge {
+    display: inline-block; font-size: 12px; letter-spacing: 3px;
+    color: var(--blue); border: 1px solid #cfe0fb;
+    border-radius: 999px; padding: 5px 16px; margin-bottom: 14px;
+    background: #f2f7ff;
+  }
+  h1 {
+    font-size: 26px; font-weight: 700; letter-spacing: 6px; color: var(--ink);
+  }
+  .sub { margin-top: 8px; font-size: 13px; color: var(--ink-dim); letter-spacing: 1px; }
+
+  /* 核心状态卡 */
+  .hero {
+    background: linear-gradient(180deg, #ffffff, #f5f9ff);
+    border: 1px solid var(--card-line); border-radius: 18px;
+    padding: 30px 22px 26px; text-align: center;
+    box-shadow: var(--shadow); margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; left: -40%; right: -40%; top: -60px; height: 90px;
+    background: radial-gradient(closest-side, rgba(47, 111, 237, 0.08), transparent);
+  }
+  .hero .state-label { font-size: 14px; letter-spacing: 3px; color: var(--blue); font-weight: 600; margin-bottom: 12px; }
+  .hero .big {
+    font-size: 64px; font-weight: 800; line-height: 1.1; color: var(--blue);
+    font-variant-numeric: tabular-nums; letter-spacing: 2px;
+  }
+  .hero .big small { font-size: 22px; font-weight: 600; letter-spacing: 4px; color: var(--ink-dim); }
+  .hero .desc { margin-top: 10px; font-size: 14px; color: var(--ink-dim); }
+  .hero .countdown {
+    margin-top: 16px; font-size: 20px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .hero .countdown b { color: var(--blue); font-size: 24px; }
+  .hero .countdown span { color: var(--ink-dim); font-size: 14px; margin: 0 2px; }
+
+  /* 信息卡 */
+  .card {
+    background: var(--card-bg); border: 1px solid var(--card-line);
+    border-radius: 14px; padding: 16px 18px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 4px 16px rgba(47, 111, 237, 0.05);
+  }
+  .card .icon {
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 10px;
+    background: var(--blue-soft); border: 1px solid #d3e4fc;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--blue);
+  }
+  .card .txt { flex: 1; min-width: 0; }
+  .card .label { font-size: 13px; color: var(--ink-dim); letter-spacing: 1px; margin-bottom: 3px; }
+  .card .val { font-size: 17px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .card .val small { color: var(--blue); }
+
+  /* 开服日历 */
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin: 22px 4px 10px; }
+  .cal-head h2 { font-size: 14px; letter-spacing: 2px; color: var(--blue); }
+  .cal-head .rule { font-size: 12px; color: var(--ink-dim); }
+  .cal { background: var(--card-bg); border: 1px solid var(--card-line); border-radius: 14px; padding: 8px 6px; box-shadow: 0 4px 16px rgba(47, 111, 237, 0.05); }
+  .cal-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+  }
+  .cal-row + .cal-row { border-top: 1px solid #f0f4fb; }
+  .cal-row .dot { width: 8px; height: 8px; border-radius: 50%; background: #cdd8e8; flex: 0 0 8px; }
+  .cal-row.past .dot { background: #9db4d4; }
+  .cal-row.next .dot { background: var(--blue); box-shadow: 0 0 10px rgba(47,111,237,0.5); }
+  .cal-row.today .dot { background: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
+  .cal-row .date { flex: 1; font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .cal-row .week { width: 56px; font-size: 13px; color: var(--ink-dim); }
+  .cal-row .tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; }
+  .cal-row.past .tag { color: var(--ink-dim); background: #f2f5fa; }
+  .cal-row.next .tag { color: #ffffff; background: var(--blue); font-weight: 700; }
+  .cal-row.today .tag { color: #ffffff; background: #10b981; font-weight: 700; }
+
+  footer { margin-top: 24px; text-align: center; font-size: 12px; color: var(--ink-dim); line-height: 1.8; }
+  footer b { color: var(--blue); font-weight: 600; }
+
+  /* 尝试隐藏平台注入的悬浮控件 */
+  #miaoda-float, .miaoda-float, [class*="miaoda-float"], [class*="app-float"], [class*="doubao-float"], [id*="app-float"] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="badge">开 服 日 历</div>
+    <h1>游戏开服提醒</h1>
+    <div class="sub">每 3 天开服一次 · 上午 10:00 整</div>
+  </header>
+
+  <section class="hero">
+    <div class="state-label" id="stateLabel">距下次开服</div>
+    <div class="big" id="bigNum">--<small> 天</small></div>
+    <div class="desc" id="heroDesc">正在计算中…</div>
+    <div class="countdown" id="countdown"></div>
+  </section>
+
+  <section class="card">
+    <div class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+    <div class="txt">
+      <div class="label">上一次开服时间</div>
+      <div class="val" id="lastOpen">--</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></div>
+    <div class="txt">
+      <div class="label">下一次开服时间</div>
+      <div class="val" id="nextOpen">--</div>
+    </div>
+  </section>
+
+  <div class="cal-head">
+    <h2>开服日历</h2>
+    <div class="rule">每 3 天一轮</div>
+  </div>
+  <section class="cal" id="calList"></section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ===== 配置 =====
+  var CYCLE_DAYS = 3;                 // 每 3 天开服
+  var OPEN_HOUR = 10, OPEN_MIN = 0;   // 10:00 整开服
+  // 锚点：上一次开服时间（用户提供）
+  var ANCHOR = new Date(2026, 8, 25, 10, 0, 0);   // 2026-09-25 10:00
+
+  var DAY_MS = 86400000;
+
+  function dayStart(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  // 从锚点日期起算的天数差（整数）
+  function dayDiffFromAnchor(now) {
+    var a = dayStart(ANCHOR);
+    var t = dayStart(now);
+    return Math.round((t - a) / DAY_MS);
+  }
+  // 第 idx 轮开服的日期 00:00（idx 可为负）
+  function serverDay(idx) {
+    return new Date(dayStart(ANCHOR).getTime() + idx * CYCLE_DAYS * DAY_MS);
+  }
+  function serverTime(idx) {
+    return new Date(serverDay(idx).getFullYear(), serverDay(idx).getMonth(), serverDay(idx).getDate(), OPEN_HOUR, OPEN_MIN, 0);
+  }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function fmtDate(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+  function fmtWeek(d) {
+    return "周" + "日一二三四五六".charAt(d.getDay());
+  }
+  function fmtFull(d) {
+    return fmtDate(d) + " " + fmtWeek(d) + " " + pad(OPEN_HOUR) + ":" + pad(OPEN_MIN);
+  }
+  function fmtHM(d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+
+  function compute(now) {
+    var diff = dayDiffFromAnchor(now);
+    // 轮次：第 0 轮 = 锚点（9/25），第 1 轮 = 9/28，第 2 轮 = 10/1……
+    var nextRound = Math.ceil(diff / CYCLE_DAYS);   // 下一次开服所在轮
+    var prevRound = nextRound - 1;                  // 上一次开服所在轮
+    var isOpenDay = (diff % CYCLE_DAYS === 0);      // 今天是开服日
+    var nextTime = serverTime(nextRound);
+    var prevTime = serverTime(prevRound);
+    return { diff: diff, nextRound: nextRound, prevRound: prevRound, isOpenDay: isOpenDay, nextTime: nextTime, prevTime: prevTime };
+  }
+
+  var bigNum = document.getElementById("bigNum");
+  var stateLabel = document.getElementById("stateLabel");
+  var heroDesc = document.getElementById("heroDesc");
+  var countdownEl = document.getElementById("countdown");
+  var lastOpen = document.getElementById("lastOpen");
+  var nextOpen = document.getElementById("nextOpen");
+  var calList = document.getElementById("calList");
+
+  function renderCal(cur) {
+    var now = new Date();
+    var diffNow = dayDiffFromAnchor(now);
+    var rows = [];
+    var i;
+    for (i = cur.nextRound; i >= cur.nextRound - 5; i--) {
+      var d = serverDay(i);
+      var t = serverTime(i);
+      var isToday = (diffNow === i * CYCLE_DAYS);
+      var isNext = (i === cur.nextRound);
+      var cls, tag;
+      if (isToday) {
+        cls = "today";
+        tag = (now >= t) ? "今天已开服" : "今日开服";
+      } else if (isNext) {
+        cls = "next";
+        tag = "下次开服";
+      } else {
+        cls = "past";
+        tag = "已开服";
+      }
+      rows.push(
+        '<div class="cal-row ' + cls + '">' +
+        '<span class="dot"></span>' +
+        '<span class="date">' + fmtDate(d) + '</span>' +
+        '<span class="week">' + fmtWeek(d) + '</span>' +
+        '<span class="tag">' + tag + '</span>' +
+        '</div>'
+      );
+    }
+    calList.innerHTML = rows.join("");
+  }
+
+  function render() {
+    var now = new Date();
+    var cur = compute(now);
+    var nextTime = cur.nextTime;
+    var prevTime = cur.prevTime;
+    var todayIsOpen = cur.isOpenDay && now >= nextTime;   // 今天开服且已到 10:00
+    var todayWillOpen = cur.isOpenDay && now < nextTime;  // 今天开服但还没到 10:00
+
+    if (todayIsOpen) {
+      stateLabel.textContent = "今天已开服";
+      bigNum.innerHTML = '<small>今日</small> 10:00<small> 开服</small>';
+      heroDesc.textContent = "开服时间：" + fmtDate(now) + "（" + fmtWeek(now) + "）上午 10:00";
+      countdownEl.innerHTML = "本次开服已完成 · 下一轮：<b>" + fmtDate(serverTime(cur.nextRound + 1)) + "</b> 10:00";
+      lastOpen.innerHTML = fmtDate(now) + " " + fmtWeek(now) + ' <small>10:00</small>';
+      nextOpen.innerHTML = fmtFull(serverTime(cur.nextRound + 1));
+    } else if (todayWillOpen) {
+      stateLabel.textContent = "今日开服 · 即将开启";
+      bigNum.innerHTML = '<small>今日</small> 10:00<small> 开服</small>';
+      heroDesc.textContent = "今天 " + fmtWeek(now) + " 上午 10:00 准时开服，请提前登录";
+      lastOpen.innerHTML = fmtFull(prevTime);
+      nextOpen.innerHTML = fmtFull(nextTime);
+      // 精确倒计时
+      var ms = nextTime - now;
+      if (ms > 0) {
+        var h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+        countdownEl.innerHTML = "距开服还有 <b>" + pad(h) + "</b><span>:</span><b>" + pad(m) + "</b><span>:</span><b>" + pad(s) + "</b>";
+      } else {
+        countdownEl.innerHTML = "";
+      }
+    } else {
+      var remainDays = Math.round((dayStart(nextTime) - dayStart(now)) / DAY_MS);   // 距下次开服剩余自然日
+      stateLabel.textContent = "距下次开服";
+      bigNum.innerHTML = remainDays + "<small> 天</small>";
+      heroDesc.textContent = "下次开服：" + fmtDate(nextTime) + "（" + fmtWeek(nextTime) + "）上午 10:00";
+      lastOpen.innerHTML = fmtFull(prevTime);
+      nextOpen.innerHTML = fmtFull(nextTime);
+      // 精确倒计时（含时分秒）
+      var ms2 = nextTime - now;
+      if (ms2 > 0) {
+        var d2 = Math.floor(ms2 / DAY_MS);
+        var h2 = Math.floor((ms2 % DAY_MS) / 3600000);
+        var m2 = Math.floor((ms2 % 3600000) / 60000);
+        var s2 = Math.floor((ms2 % 60000) / 1000);
+        countdownEl.innerHTML = "精确倒计时 <b>" + d2 + "</b><span>天</span><b>" + pad(h2) + "</b><span>:</span><b>" + pad(m2) + "</b><span>:</span><b>" + pad(s2) + "</b>";
+      } else {
+        countdownEl.innerHTML = "";
+      }
+    }
+    renderCal(cur);
+  }
+
+  render();
+  setInterval(render, 1000);
+})();
+</script>
+</body>
+</html>
